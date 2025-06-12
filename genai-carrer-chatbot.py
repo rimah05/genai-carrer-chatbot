@@ -14,9 +14,9 @@ except ModuleNotFoundError:
 
 # ---- CONFIGURATION ----
 if "OPENAI_API_KEY" in st.secrets:
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
+    client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 elif "OPENAI_API_KEY" in os.environ:
-    openai.api_key = os.environ["OPENAI_API_KEY"]
+    client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 else:
     st.error("OpenAI API key not found. Please set it in Streamlit secrets or environment variables.")
     st.stop()
@@ -49,7 +49,7 @@ Respond clearly with bullet points.
 if st.button("🎯 Get Recommendations") and user_input.strip():
     with st.spinner("Thinking..."):
         try:
-            response = openai.ChatCompletion.create(
+            chat_completion = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a helpful career guide."},
@@ -58,7 +58,7 @@ if st.button("🎯 Get Recommendations") and user_input.strip():
                 temperature=0.7,
                 max_tokens=500
             )
-            reply = response['choices'][0]['message']['content']
+            reply = chat_completion.choices[0].message.content
             st.success("Here’s your personalized advice:")
             st.markdown(reply)
         except Exception as e:
